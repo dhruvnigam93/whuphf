@@ -1,8 +1,19 @@
 from fasthtml.common import *
-import sqlite3
+import pandas as pd
+from sentence_transformers import SentenceTransformer
+from annoy import AnnoyIndex
 
 app, rt = fast_app(live=True)
 
+# Load the Sentence Transformer model
+model = SentenceTransformer('BAAI/bge-large-en-v1.5')
+
+# Load the Annoy index
+index = AnnoyIndex(768, 'euclidean')  # Assuming the embedding dimension is 768
+index.load('office-lines.ann')
+
+# Load the dialogues DataFrame
+dilogues_df = pd.read_csv('dilogues.csv')
 
 @rt('/', methods=['GET'])
 def index():
@@ -15,19 +26,18 @@ def index():
         )
     )
 
-
 @rt('/search', methods=['GET'])
 def search(query):
-    conn = sqlite3.connect('office-lines.db')
-    c = conn.cursor()
-    c.execute('SELECT line_text FROM main.items limit 1')
-    results = c.fetchall()
-    conn.close()
+    # Convert the query to an embedding
+    query_embedding = model.encode(query)
+
+    # Perform similarity search
+    nearest_id = index.get_nns_by_vector(query_embedding, 1)[0]
+
+    # Fetch the corresponding dialogue text
+    dialogue_text = dilogues_df[dilogues_df['id'] == nearest_id]['dialogue'].values[0]
 
     return Div(
         P(f'Search results for "{query}":'),
-        Ul(*[Li(result[0]) for result in results])
+        Ul(Li(dialogue_text))
     )
-
-
-serve()

@@ -6,8 +6,9 @@ authors = ["dhruv <dhruv.nigam93@gmail.com>"]
 readme = "README.md"
 
 [tool.poetry.dependencies]
-python = "^3.12"
-python-fasthtml = "^0.2.4"
+python = "^3.9"
+annoy = "^1.17.3"
+pandas = "^2.2.2"
 
 
 [build-system]
