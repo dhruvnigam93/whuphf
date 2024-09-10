@@ -30,7 +30,7 @@ def setup_database():
     Setup SQLite database and import data from CSV
     :return:
     """
-    conn = sqlite3.connect('office-lines.db')
+    conn = sqlite3.connect('office-lines.data')
     c = conn.cursor()
 
     with open('the-office-lines - scripts.csv', 'r') as file:

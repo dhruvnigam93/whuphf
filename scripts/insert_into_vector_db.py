@@ -11,18 +11,16 @@ def prepare_annoy_index(dim: int, n_trees: int = 10) -> AnnoyIndex:
 
 def serialize_to_annoy_format(embedding_df):
     """Converts DataFrame embeddings to numpy format required by Annoy."""
-    embeddings = np.vstack(embedding_df["embedding"].values).astype('float32')
+    embeddings = np.vstack(embedding_df["context_embeddings"].values).astype('float32')
     ids = embedding_df["id"].values.astype('int64')
     return ids, embeddings
 
 
 # Load data
-raw_data_df = pd.read_parquet("/Users/dhruv.nigam/PycharmProjects/whuphf/df_output.parquet")
-dilogues_df = raw_data_df.drop(columns=["embedding"])
-embedding_df = raw_data_df[["id", "embedding"]]
+embedding_df = pd.read_pickle("../data/the-office-lines-embeddings.pkl")
 
 # Annoy setup
-dim = len(embedding_df["embedding"].iloc[0])  # assuming all embeddings have the same dimension
+dim = len(embedding_df["context_embeddings"].iloc[0])  # assuming all embeddings have the same dimension
 index = prepare_annoy_index(dim)
 
 # Add vectors to the Annoy index
@@ -34,7 +32,4 @@ for i, embedding in zip(ids, embeddings):
 index.build(10)  # 10 trees
 
 # Save the index to disk
-index.save("office-lines.ann")
-
-# Saving dilogues_df as a CSV (as Annoy does not handle non-vector data)
-dilogues_df.to_csv("dilogues.csv", index=False)
+index.save("../data/office-lines-vec-db.ann")
